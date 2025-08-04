@@ -72,6 +72,13 @@
         echo "- $(riscv64-unknown-linux-gnu-gcc --version | head -n 1)"
         echo "- $(java -version 2>&1 | head -n 1)"
         echo "You can press Ctrl + D to exit devshell."
+        export XS_PROJECT_ROOT=`pwd`
+        export NEMU_HOME=`readlink -f NEMU`
+        export AM_HOME=`readlink -f nexus-am`
+        export NOOP_HOME=`readlinke -f XiangShan`
+        export DRAMSIM3_HOME=`readlink -f DRAMsim3`
+        export GEM5_HOME=`readlink -f GEM5`
+        export PATH="$XS_PROJECT_ROOT/install/bin:$PATH"
       '';
     };
   };
