@@ -13,7 +13,7 @@
       packages = with pkgs; [
         # === scripts ===
         (writeScriptBin "nemumake" ''make -C $NEMU_HOME $1'')
-        (writeScriptBin "gem5just" ''just -f $GEM5_HOME/Justfile -d $GEM5_HOME $1'')
+        (writeScriptBin "gem5just" ''just -f $GEM5_HOME/Justfile -d $GEM5_HOME $1 $2'')
 
         # === tool ===
         wget
