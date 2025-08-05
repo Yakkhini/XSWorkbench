@@ -10,6 +10,39 @@
     pkgs = import nixpkgs { inherit system; };
   in {
     devShells.${system}.default = pkgs.mkShell {
+      buildInputs = with pkgs; [
+        boost
+        gflags
+        glog
+        gperftools
+        gtest
+        llvm
+        libelf
+        libffi
+        libpng
+        libtool
+        pkg-config
+        python3
+        python3Packages.psutil # for XiangShan/scripts/xiangshan.py
+        temurin-bin
+
+        # override scons built-in python library version to 3.10 since newer version
+        # has issues in compatibility.
+        (scons.override {python3Packages = pkgs.python310Packages;})
+        swig
+        zlib
+
+        # The following dependencies are optional and seldom used
+        # protobuf # protobuf version is strictly enforced by gem5, not sure which version
+        # hdf5
+
+        # === lib ===
+        readline
+        SDL2
+        zlib
+        zstd
+        sqlite
+      ];
       packages = with pkgs; [
         # === scripts ===
         (writeScriptBin "nemumake" ''make -C $NEMU_HOME $1'')
@@ -22,17 +55,14 @@
         curl
         time
 
-        # === runtime ===
-        python3
-        python3Packages.psutil # for XiangShan/scripts/xiangshan.py
-        openjdk
-
         # === toolchain ===
-        gcc # host toolchain
-        pkgsCross.riscv64.buildPackages.gcc # riscv64-unknown-elf-xxx toolchain
-        llvm # for pgo
+        gcc
+        pkgsCross.riscv64.buildPackages.gcc
         clang
-        gnumake # make
+        gnumake
+        gnum4
+        cmake
+        ninja
         dtc # device tree compiler
         flex
         autoconf
@@ -60,12 +90,6 @@
         # === debug ===
         gtkwave
 
-        # === lib ===
-        readline
-        SDL2
-        zlib
-        zstd
-        sqlite
       ];
       shellHook = ''
         echo "=== Welcome to XiangShan devshell! ==="
