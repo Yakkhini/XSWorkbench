@@ -7,8 +7,10 @@
 
   outputs = {nixpkgs, ...}: let
     system = "x86_64-linux";
-    pkgs = import nixpkgs { inherit system; };
+    pkgs = import nixpkgs {inherit system;};
   in {
+    formatter.x86_64-linux = pkgs.alejandra;
+
     devShells.${system}.default = pkgs.mkShell {
       buildInputs = with pkgs; [
         boost
@@ -89,7 +91,6 @@
 
         # === debug ===
         gtkwave
-
       ];
       shellHook = ''
         echo "=== Welcome to XiangShan devshell! ==="
