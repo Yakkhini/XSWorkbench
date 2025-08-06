@@ -24,8 +24,11 @@
         libpng
         libtool
         pkg-config
-        python3
-        python3Packages.psutil # for XiangShan/scripts/xiangshan.py
+        (python3.withPackages (ps:
+          with ps; [
+            psutil
+            pyyaml
+          ]))
         temurin-bin
 
         # override scons built-in python library version to 3.10 since newer version
