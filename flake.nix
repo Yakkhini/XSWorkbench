@@ -26,6 +26,8 @@
         pkg-config
         (python3.withPackages (ps:
           with ps; [
+            scipy
+            pandas
             psutil
             pyyaml
           ]))
@@ -111,6 +113,7 @@
         export DRAMSIM3_HOME=`readlink -f DRAMsim3`
         export GEM5_HOME=`readlink -f GEM5`
         export PATH="$XS_PROJECT_ROOT/install/bin:$PATH"
+        export PYTHONPATH=`readlink -f GEM5/DataProcess`:$PYTHONPATH
       '';
     };
   };
