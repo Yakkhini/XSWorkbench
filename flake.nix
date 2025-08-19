@@ -61,6 +61,7 @@
         tmux
         curl
         time
+        parallel
 
         # === toolchain ===
         gcc
