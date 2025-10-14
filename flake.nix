@@ -62,6 +62,7 @@
         curl
         time
         parallel
+        lazysql
 
         # === toolchain ===
         gcc
@@ -98,6 +99,10 @@
         # === debug ===
         gtkwave
       ];
+
+      # Disable hardening, FORTIFY is causing problem when building XS-GEM5 debug version without optimization
+      hardeningDisable = ["all"];
+
       shellHook = ''
         echo "=== Welcome to XiangShan devshell! ==="
         echo "Version info:"
