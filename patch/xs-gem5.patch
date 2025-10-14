@@ -1,0 +1,296 @@
+diff --git a/.envrc b/.envrc
+deleted file mode 100644
+index dc405bec00..0000000000
+--- a/.envrc
++++ /dev/null
+@@ -1 +0,0 @@
+-use flake path:nix
+diff --git a/.gitmodules b/.gitmodules
+new file mode 100644
+index 0000000000..88f7eae8a6
+--- /dev/null
++++ b/.gitmodules
+@@ -0,0 +1,3 @@
++[submodule "DataProcess"]
++	path = DataProcess
++	url = git@github.com:Yakkhini/gem5_data_proc.git
+diff --git a/DataProcess b/DataProcess
+new file mode 160000
+index 0000000000..b63c508d3b
+--- /dev/null
++++ b/DataProcess
+@@ -0,0 +1 @@
++Subproject commit b63c508d3b17df70bf239855ddc980162102b523
+diff --git a/Justfile b/Justfile
+new file mode 100644
+index 0000000000..7b151fb75a
+--- /dev/null
++++ b/Justfile
+@@ -0,0 +1,58 @@
++setup:
++  #!/usr/bin/env zsh
++  cd ext/dramsim3
++  git clone https://github.com/umd-memsys/DRAMsim3.git DRAMsim3
++  cd DRAMsim3 && mkdir -p build
++  cd build
++  cmake ..
++  make -j 48
++
++build:
++  scons build/RISCV/gem5.opt --gold-linker -j $NIX_BUILD_CORES
++  mkdir -p $XS_PROJECT_ROOT/install/bin
++  cp $GEM5_HOME/build/RISCV/gem5.opt $XS_PROJECT_ROOT/install/bin/xs-gem5
++
++build-debug:
++  scons build/RISCV/gem5.debug --gold-linker -j $NIX_BUILD_CORES
++  mkdir -p $XS_PROJECT_ROOT/install/bin
++  cp $GEM5_HOME/build/RISCV/gem5.debug $XS_PROJECT_ROOT/install/bin/xs-gem5-debug
++
++only-install:
++  mkdir -p $XS_PROJECT_ROOT/install/bin
++  cp $GEM5_HOME/build/RISCV/gem5.opt $XS_PROJECT_ROOT/install/bin/xs-gem5
++
++prepare:
++  nemumake riscv64-gem5-ref_defconfig
++  nemumake -j100
++  cd $NEMU_HOME/resource/gcpt_restore && make clean && make
++
++xs-run workload:
++  #!/usr/bin/env zsh
++  mkdir -p $XS_PROJECT_ROOT/out
++  export tag=single-$(date +%F)-$(cd $GEM5_HOME && git rev-parse --short HEAD)
++  mkdir -p $XS_PROJECT_ROOT/out/gem5/$tag
++  # should not hardcode the path here like `nfs`
++  xs-gem5 -d $XS_PROJECT_ROOT/out/gem5/$tag $GEM5_HOME/configs/example/xiangshan.py --enable-bp-db tage --bp-type=DecoupledBPUWithBTB --disable-mgsc --ideal-kmhv3 --difftest-ref-so $NEMU_HOME/build/riscv64-nemu-interpreter-so --gcpt-restore /nfs/share/gem5_ci/tools/normal-gcb-restorer.bin --generic-rv-cpt {{workload}} > $XS_PROJECT_ROOT/out/gem5/$tag/log
++
++xs-parallel-run workload:
++
++xs-run-raw workload:
++  #!/usr/bin/env zsh
++  mkdir -p $XS_PROJECT_ROOT/out
++  export tag=single-raw-$(date +%F)-$(cd $GEM5_HOME && git rev-parse --short HEAD)
++  mkdir -p $XS_PROJECT_ROOT/out/gem5/$tag
++  xs-gem5 -d $XS_PROJECT_ROOT/out/gem5/$tag $GEM5_HOME/configs/example/xiangshan.py --enable-bp-db tage --bp-type=DecoupledBPUWithBTB --disable-mgsc --ideal-kmhv3 --difftest-ref-so $NEMU_HOME/build/riscv64-nemu-interpreter-so --raw-cpt --generic-rv-cpt {{workload}}
++
++xs-run-raw-debug workload:
++  #!/usr/bin/env zsh
++  mkdir -p $XS_PROJECT_ROOT/out
++  export tag=single-raw-$(date +%F)-$(cd $GEM5_HOME && git rev-parse --short HEAD)
++  mkdir -p $XS_PROJECT_ROOT/out/gem5/$tag
++  gdb --args xs-gem5-debug -d $XS_PROJECT_ROOT/out/gem5/$tag $GEM5_HOME/configs/example/xiangshan.py --enable-bp-db tage --bp-type=DecoupledBPUWithBTB --disable-mgsc --ideal-kmhv3 --difftest-ref-so $NEMU_HOME/build/riscv64-nemu-interpreter-so --raw-cpt --generic-rv-cpt {{workload}}
++
++run-dot8coverage:
++  # should not hardcode the path here like `nfs`
++  bash $GEM5_HOME/util/xs_scripts/parallel_sim.sh /nfs/share/gem5_ci/spec06_cpts/spec_0.8c_int.lst /nfs/home/share/jiaxiaoyu/simpoint_checkpoint_zstd_format/spec06_rv64gcb_O3_20m_gcc12.2.0-intFpcOff-jeMalloc
++
++clean:
++  rm -r $GEM5_HOME/build
+diff --git a/util/xs_scripts/parallel_sim.sh b/util/xs_scripts/parallel_sim.sh
+index 16ee1ad37f..3f3b952431 100644
+--- a/util/xs_scripts/parallel_sim.sh
++++ b/util/xs_scripts/parallel_sim.sh
+@@ -1,131 +1,132 @@
+-# DO NOT track your local updates in this script!
++#!usr/bin/env bash
+ 
+ function print_help() {
+-    printf "Usage:
+-    bash $0 arch_script.sh workload_list.lst checkpoint_top_dir task_tag\n"
+-    exit 1
++  printf "Usage:
++    bash $0 workload_list.lst checkpoint_top_dir\n"
++  exit 1
+ }
+ 
+-if [[ -z "$4" ]]; then   # $1 is not set
+-    echo "Arguments not provided!"
+-    print_help
++if [[ -z "$2" ]]; then
++  echo "Arguments not provided!"
++  print_help
+ fi
+ 
+ set -x
+ 
+-export arch_script=`realpath $1`
+-
+ # Note 1: workload list contains the workload name, checkpoint path, and parameters, looks like:
+ #       astar_biglakes_122060000000 astar_biglakes_122060000000_0.244818/0/ 0 0 20 20
+ #       bwaves_1003220000000 bwaves_1003220000000_0.036592/0/ 0 0 20 20
+ # Note 2: The meaning of fields:
+ # workload_name, checkpoint_path, skip insts(usually 0), functional_warmup insts(usually 0), detailed_warmup insts (usually 20), sample insts
+ # Note 3: you can write a script to generate such a list accordingly
+-export workload_list=`realpath $2`
++export workload_list=$(realpath $1)
+ 
+ # The checkpoint directory. We will find checkpoint_path in workload_list
+ # under this directory to get the checkpoint path.
+-export cpt_dir=`realpath $3`
++export cpt_dir=$(realpath $2)
+ 
+-export tag=$4
++export tag=parallel-$(date +%F)-$(
++  cd $GEM5_HOME || exit
++  git rev-parse --short=8 HEAD
++)-result
+ 
+ export log_file='log.txt'
+ 
+-export ds=$(pwd)  # data storage. It is specific for BOSC machines, you can ignore it
+-export full_work_dir=$ds/$tag # work dir wheter stats data stored
++export ds=$XS_PROJECT_ROOT/out/gem5 # data storage. It is specific for BOSC machines, you can ignore it
++export full_work_dir=$ds/$tag       # work dir wheter stats data stored
+ mkdir -p $full_work_dir
+-ln -sf $full_work_dir .  # optional, you can customize it yourself
+ 
+ check() {
+-    if [ $1 -ne 0 ]; then
+-        echo FAIL
+-        rm running
+-        touch abort
+-        exit
+-    fi
++  if [ $1 -ne 0 ]; then
++    echo FAIL
++    rm running
++    touch abort
++    exit
++  fi
+ }
+ 
+ trap cleanup SIGINT
+ 
+ function cleanup() {
+-    echo "Script interrupted, marking tasks as aborted..."
+-    find $full_work_dir -type f -name running -execdir bash -c 'rm -f running; touch abort' \;
+-    exit 1
++  echo "Script interrupted, marking tasks as aborted..."
++  find $full_work_dir -type f -name running -execdir bash -c 'rm -f running; touch abort' \;
++  exit 1
+ }
+ 
+ function run() {
+-    set -x
+-    hostname
++  set -x
++  hostname
+ 
+-    cd $2  # work_dir
+-
+-    if test -f "completed"; then
+-        echo "Already completed; skip $1"
+-        return
+-    fi
++  cd $2 # work_dir
+ 
++  if test -f "completed"; then
++    echo "Already completed; skip $1"
++    return
++  fi
+ 
+-    rm -f abort
+-    rm -f completed
++  rm -f abort
++  rm -f completed
+ 
+-    touch running
++  touch running
+ 
+-    script_dir=$(dirname -- "$( readlink -f -- "$0"; )")
+-    bash $arch_script $1 # checkpoint
+-    check $?
++  script_dir=$(dirname -- "$(readlink -f -- "$0")")
++  xs-gem5 $GEM5_HOME/configs/example/xiangshan.py --bp-type=DecoupledBPUWithBTB --ideal-kmhv3 --difftest-ref-so $NEMU_HOME/build/riscv64-nemu-interpreter-so --gcpt-restore /nfs/share/gem5_ci/tools/normal-gcb-restorer.bin --generic-rv-cpt $1
++  check $?
+ 
+-    rm running
+-    touch completed
++  rm running
++  touch completed
+ }
+ 
+ function prepare_env() {
+-    set -x
+-    echo "prepare_env $@"
+-    all_args=("$@")
+-    task=${all_args[0]}
+-    task_path=${all_args[1]}
+-    # 同时匹配 gz zstd 后缀
+-    suffixes=("gz" "zstd")
+-    checkpoint=""
+-    for suffix in "${suffixes[@]}"; do
+-        checkpoint=$(find -L "$cpt_dir" -wholename "*${task_path}*.$suffix" | head -n 1)
+-        if [ -n "$checkpoint" ]; then
+-            break
+-        fi
+-    done
+-    echo $checkpoint
+-
+-    export work_dir=$full_work_dir/$task
+-    echo $work_dir
+-    mkdir -p $work_dir
++  set -x
++  echo "prepare_env $@"
++  all_args=("$@")
++  task=${all_args[0]}
++  task_path=${all_args[1]}
++  # 同时匹配 gz zstd 后缀
++  suffixes=("gz" "zstd")
++  checkpoint=""
++  for suffix in "${suffixes[@]}"; do
++    checkpoint=$(find -L "$cpt_dir" -wholename "*${task_path}*.$suffix" | head -n 1)
++    if [ -n "$checkpoint" ]; then
++      break
++    fi
++  done
++  echo $checkpoint
++
++  export work_dir=$full_work_dir/$task
++  echo $work_dir
++  mkdir -p $work_dir
+ }
+ 
+ function arg_wrapper() {
+-    prepare_env $@
++  prepare_env $@
+ 
+-    all_args=("$@")
+-    args=(${all_args[0]})
++  all_args=("$@")
++  args=(${all_args[0]})
+ 
+-    skip=${args[2]}
+-    fw=${args[3]}
+-    dw=${args[4]}
+-    sample=${args[5]}
++  skip=${args[2]}
++  fw=${args[3]}
++  dw=${args[4]}
++  sample=${args[5]}
+ 
+-    run $checkpoint $work_dir >$work_dir/$log_file 2>&1
++  run $checkpoint $work_dir >$work_dir/$log_file 2>&1
+ }
+ 
+-
+ export -f check
+ export -f run
+ export -f arg_wrapper
+ export -f prepare_env
+ 
+ # xsgem5_para_jobs define in docker compose
+-num_threads=${xsgem5_para_jobs:-63}
++num_threads=$NIX_BUILD_CORES
+ function parallel_run() {
+-    # We use gnu parallel to control the parallelism.
+-    # If your server has 32 core and 64 SMT threads, we suggest to run with no more than 32 threads.
+-    cat $workload_list | parallel -a - -j $num_threads arg_wrapper {}
++  # We use gnu parallel to control the parallelism.
++  # If your server has 32 core and 64 SMT threads, we suggest to run with no more than 32 threads.
++  cat $workload_list | parallel -a - -j $num_threads arg_wrapper {}
++  cd "$GEM5_HOME"/DataProcess || exit
++  bash example-scripts/gem5-score-ci.sh $XS_PROJECT_ROOT/out/gem5/$tag /nfs/share/gem5_ci/spec06_cpts/cluster-0-0.json >$XS_PROJECT_ROOT/out/gem5/"$tag"/score.txt
++  cat $XS_PROJECT_ROOT/out/gem5/"$tag"/score.txt
+ }
+ 
+ parallel_run
