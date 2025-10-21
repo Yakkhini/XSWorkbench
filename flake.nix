@@ -115,7 +115,7 @@
         export XS_PROJECT_ROOT=`pwd`
         export NEMU_HOME=`readlink -f NEMU`
         export AM_HOME=`readlink -f nexus-am`
-        export NOOP_HOME=`readlinke -f XiangShan`
+        export NOOP_HOME=`readlink -f XiangShan`
         export DRAMSIM3_HOME=`readlink -f DRAMsim3`
         export GEM5_HOME=`readlink -f GEM5`
         export PATH="$XS_PROJECT_ROOT/install/bin:$PATH"
