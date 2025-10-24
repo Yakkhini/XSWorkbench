@@ -58,16 +58,18 @@
         # === tool ===
         wget
         git
-        tmux
+        zellij
         curl
         time
         parallel
         lazysql
+        delta
 
         # === toolchain ===
         gcc
         pkgsCross.riscv64.buildPackages.gcc
         clang
+        bear
         gnumake
         gnum4
         cmake
@@ -76,6 +78,8 @@
         flex
         autoconf
         bison
+        statix
+        coursier
         # override mill & verilator to use our version
         (mill.overrideAttrs (finalAttrs: previousAttrs: {
           version = "0.12.3";
@@ -118,7 +122,7 @@
         export NOOP_HOME=`readlink -f XiangShan`
         export DRAMSIM3_HOME=`readlink -f DRAMsim3`
         export GEM5_HOME=`readlink -f GEM5`
-        export PATH="$XS_PROJECT_ROOT/install/bin:$PATH"
+        export PATH="$HOME/.local/share/coursier/bin:$XS_PROJECT_ROOT/install/bin:$PATH"
         export PYTHONPATH=`readlink -f GEM5/DataProcess`:$PYTHONPATH
       '';
     };
