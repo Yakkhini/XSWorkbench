@@ -30,6 +30,8 @@
             pandas
             psutil
             pyyaml
+            matplotlib
+            dash
           ]))
         temurin-bin
 
