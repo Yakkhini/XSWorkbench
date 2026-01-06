@@ -65,7 +65,9 @@
         time
         parallel
         lazysql
+        tabiew
         delta
+        nushell
 
         # === toolchain ===
         gcc
@@ -104,6 +106,7 @@
 
         # === debug ===
         gtkwave
+        surfer
       ];
 
       # Disable hardening, FORTIFY is causing problem when building XS-GEM5 debug version without optimization
