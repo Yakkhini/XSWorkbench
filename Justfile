@@ -1,6 +1,7 @@
 setup:
   git submodule update --init --recursive DRAMsim3 NEMU NutShell nexus-am GEM5 DataProcess
   git submodule update --init XiangShan && make -C XiangShan init;
+  rm -f $GEM5_HOME/.envrc
 
 update-module:
   cd XiangShan; git fetch origin; git checkout origin/kunminghu-v3; make init; cd ..

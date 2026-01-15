@@ -54,8 +54,8 @@
       ];
       packages = with pkgs; [
         # === scripts ===
-        (writeScriptBin "nemumake" ''make -C $NEMU_HOME $1'')
-        (writeScriptBin "gem5just" ''just -f $GEM5_HOME/Justfile -d $GEM5_HOME $1 $2'')
+        (writeScriptBin "nemu-just" ''just -f $XS_PROJECT_ROOT/build-system/NEMU.just -d $NEMU_HOME $1 $2'')
+        (writeScriptBin "gem5-just" ''just -f $XS_PROJECT_ROOT/build-system/GEM5.just -d $GEM5_HOME $1 $2'')
 
         # === tool ===
         wget
