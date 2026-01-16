@@ -92,17 +92,7 @@
             hash = "sha256-hqzAuYadCciYPs/b6zloLUfrWF4rRtlBSMxSj7tLg7g=";
           };
         }))
-        (verilator.overrideAttrs (finalAttrs: previousAttrs: {
-          version = "5.028";
-          VERILATOR_SRC_VERSION = "v${finalAttrs.version}";
-          src = fetchFromGitHub {
-            owner = "verilator";
-            repo = "verilator";
-            rev = "v${finalAttrs.version}";
-            hash = "sha256-YgK60fAYG5575uiWmbCODqNZMbRfFdOVcJXz5h5TLuE=";
-          };
-          doCheck = false;
-        }))
+        verilator
 
         # === debug ===
         gtkwave
