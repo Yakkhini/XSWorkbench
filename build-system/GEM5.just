@@ -26,6 +26,9 @@ prepare:
   nemujust -j100
   cd $NEMU_HOME/resource/gcpt_restore && make clean && make
 
+unit-test:
+  cd $GEM5_HOME && CC=gcc CXX=g++ scons build/RISCV/unittests.opt -j100 --unit-test
+
 xs-run workload:
   #!/usr/bin/env zsh
   mkdir -p $XS_PROJECT_ROOT/out
