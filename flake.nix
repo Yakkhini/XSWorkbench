@@ -12,6 +12,9 @@
     formatter.x86_64-linux = pkgs.alejandra;
 
     devShells.${system}.default = pkgs.mkShell {
+      nativeBuildInputs = with pkgs; [
+        pkg-config
+      ];
       buildInputs = with pkgs; [
         boost
         gflags
@@ -23,7 +26,6 @@
         libffi
         libpng
         libtool
-        pkg-config
         (python3.withPackages (ps:
           with ps; [
             scipy
