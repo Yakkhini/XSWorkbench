@@ -121,6 +121,7 @@
         export GEM5_HOME=`readlink -f GEM5`
         export PATH="$HOME/.local/share/coursier/bin:$XS_PROJECT_ROOT/install/bin:$PATH"
         export PYTHONPATH=`readlink -f DataProcess`:$PYTHONPATH
+        export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath [ pkgs.stdenv.cc.cc ]}
       '';
     };
   };
