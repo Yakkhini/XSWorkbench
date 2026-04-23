@@ -120,7 +120,7 @@
         export DRAMSIM3_HOME=`readlink -f DRAMsim3`
         export GEM5_HOME=`readlink -f GEM5`
         export PATH="$HOME/.local/share/coursier/bin:$XS_PROJECT_ROOT/install/bin:$PATH"
-        export PYTHONPATH=`readlink -f GEM5/DataProcess`:$PYTHONPATH
+        export PYTHONPATH=`readlink -f DataProcess`:$PYTHONPATH
       '';
     };
   };
