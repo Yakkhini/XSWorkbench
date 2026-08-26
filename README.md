@@ -1,3 +1,5 @@
+
+
 # OpenXiangShan Workbench
 
 Yet another OpenXiangShan develop framework with heavy modifications and more aggressive features:
@@ -16,7 +18,7 @@ nix develop
 
 Direnv is another optional tool to enter the development environment automatically when you `cd` into the project directory.
 
-Since all dependencies and environment variables are declared in `flake.nix`, no need to run `setup-tools.sh` to install theme anymore.
+Since all dependencies and environment variables are declared in `flake.nix`, no need to run `setup-tools.sh` to install them anymore.
 
 Use `just` to run setup command which declared in `Justfile`:
 
