@@ -12,6 +12,12 @@ build:
   mkdir -p $XS_PROJECT_ROOT/install/bin
   cp $GEM5_HOME/build/RISCV/gem5.opt $XS_PROJECT_ROOT/install/bin/xs-gem5
 
+setref:
+  mkdir -p $XS_PROJECT_ROOT/install/util
+  cp $XS_PROJECT_ROOT/install/bin/xs-gem5 $XS_PROJECT_ROOT/install/bin/xs-gem5-ref
+  cp $GEM5_HOME/configs/example/idealkmhv3.py $GEM5_HOME/configs/example/idealkmhv3_ref.py
+  cp $GEM5_HOME/configs/example/kmhv3.py $GEM5_HOME/configs/example/kmhv3_ref.py
+
 build-debug:
   scons build/RISCV/gem5.debug --gold-linker -j $NIX_BUILD_CORES
   mkdir -p $XS_PROJECT_ROOT/install/bin
