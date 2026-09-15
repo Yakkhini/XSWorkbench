@@ -1,3 +1,6 @@
+cd:
+  cd $GEM5_HOME
+
 setup:
   #!/usr/bin/env zsh
   cd ext/dramsim3

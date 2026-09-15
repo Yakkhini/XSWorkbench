@@ -1,3 +1,6 @@
+cd:
+  cd $NEMU_HOME
+
 prepare:
   make -C $NEMU_HOME menuconfig CC=gcc # Currently there may appears compiler error. See https://github.com/OpenXiangShan/NEMU/pull/931
 
